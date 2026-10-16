@@ -1,0 +1,14 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="sm-sun" x1="7" y1="8" x2="20" y2="22" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD37A"/>
+      <stop offset="1" stop-color="#F2A93C"/>
+    </linearGradient>
+  </defs>
+  <rect width="40" height="40" rx="9" fill="#10141F"/>
+  <circle cx="14" cy="15" r="6.5" fill="url(#sm-sun)"/>
+  <rect x="22" y="23" width="3.2" height="7" rx="1" fill="#F2A93C"/>
+  <rect x="26.4" y="19" width="3.2" height="11" rx="1" fill="#33D6C0"/>
+  <rect x="30.8" y="14" width="3.2" height="16" rx="1" fill="#F2A93C"/>
+  <rect x="35.2" y="9" width="3.2" height="21" rx="1" fill="#33D6C0"/>
+</svg>
