@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { useAssessment } from '../components/AssessmentContext.jsx';
@@ -10,6 +10,7 @@ export default function SavedAssessment() {
   const { id } = useParams();
   const { user } = useAuth();
   const { open } = useAssessment();
+  const navigate = useNavigate();
   const [state, setState] = useState({ loading: true, data: null, error: null });
 
   useEffect(() => {
@@ -53,7 +54,7 @@ export default function SavedAssessment() {
           </button>
         </div>
       </header>
-      <ResultsView result={state.data.result} mode="saved" />
+      <ResultsView result={state.data.result} mode="saved" onChoose={(plan) => navigate(`/app/assessments/${id}/offers?plan=${plan}`)} />
     </div>
   );
 }

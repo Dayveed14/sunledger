@@ -28,13 +28,14 @@ export default function Results() {
 
   const isCustomer = user && (user.role === 'individual' || user.role === 'business');
 
-  const save = async () => {
+  // Saves the assessment, then opens it (or, if they tapped an option, that option's vendor offers).
+  const save = async (plan) => {
     setSaving(true);
     setError(null);
     try {
       const saved = await api.saveAssessment(pending.input);
       clearPending();
-      navigate(`/app/assessments/${saved.id}`);
+      navigate(plan ? `/app/assessments/${saved.id}/offers?plan=${plan}` : `/app/assessments/${saved.id}`);
     } catch (err) {
       setError(err.message);
       setSaving(false);
@@ -53,7 +54,7 @@ export default function Results() {
             Change my answers
           </button>
           {isCustomer ? (
-            <button type="button" className="btn btn-primary btn-small" onClick={save} disabled={saving}>
+            <button type="button" className="btn btn-primary btn-small" onClick={() => save()} disabled={saving}>
               {saving ? 'Saving…' : 'Save to my account'}
             </button>
           ) : (
@@ -87,11 +88,11 @@ export default function Results() {
 
       <ResultsView
         result={pending.result}
-        mode="guest"
-        onChoose={isCustomer ? undefined : () => navigate('/signup')}
+        mode={isCustomer ? 'saved' : 'guest'}
+        onChoose={isCustomer ? (plan) => save(plan) : () => navigate('/signup')}
       />
       {isCustomer && (
-        <p className="r-fine center">Save this assessment to your account to keep it and get matched with providers when they open.</p>
+        <p className="r-fine center">Tap an option to save this assessment and see offers from vendors.</p>
       )}
     </div>
   );

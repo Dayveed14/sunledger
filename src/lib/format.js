@@ -22,3 +22,15 @@ export const kwh = (n) => (n >= 100 ? Math.round(n) : Math.round(n * 10) / 10).t
 
 export const formatDate = (value) =>
   new Date(value).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+
+export const PLAN_LABEL = { buy: 'Buy', lease: 'Lease to own', rent: 'Rent', eaas: 'Energy as a service' };
+export const CATEGORY_LABEL = { panel: 'Solar panel', inverter: 'Inverter', battery: 'Battery' };
+export const CATEGORY_PLURAL = { panel: 'Solar panels', inverter: 'Inverters', battery: 'Batteries' };
+
+// "550W", "1.5 kVA · 12V", "2.4 kWh · 12V · lithium" — one place so every screen words sizes the same way.
+export function sizeText(p) {
+  if (p.category === 'panel') return `${p.rating}W`;
+  if (p.category === 'inverter') return `${p.rating} kVA${p.systemVoltage ? ` · ${p.systemVoltage}V` : ''}`;
+  const type = p.batteryType ? ` · ${p.batteryType}` : '';
+  return `${p.rating} kWh${p.systemVoltage ? ` · ${p.systemVoltage}V` : ''}${type}`;
+}

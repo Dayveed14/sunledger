@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import { useAssessment } from '../components/AssessmentContext.jsx';
-import { formatDate, kwh, nairaCompact } from '../lib/format.js';
+import { PLAN_LABEL, formatDate, kwh, naira, nairaCompact } from '../lib/format.js';
 import { clearPending, loadPending } from '../lib/pending.js';
 
 const ROLE_LABEL = { individual: 'Individual', business: 'Business', vendor: 'Vendor', admin: 'Admin' };
@@ -18,6 +18,7 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
   const [pending, setPending] = useState(() => loadPending());
   const [saving, setSaving] = useState(false);
+  const [requests, setRequests] = useState(null);
 
   useEffect(() => {
     if (!isCustomer) return undefined;
@@ -30,6 +31,20 @@ export default function Dashboard() {
       cancelled = true;
     };
   }, [isCustomer]);
+
+  const loadRequests = () => api.myRequests().then((r) => setRequests(r.requests)).catch(() => setRequests([]));
+  useEffect(() => {
+    if (isCustomer) loadRequests();
+  }, [isCustomer]);
+
+  const cancelRequest = async (id) => {
+    try {
+      await api.cancelRequest(id);
+      loadRequests();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
 
   const savePending = async () => {
     setSaving(true);
@@ -107,13 +122,28 @@ export default function Dashboard() {
         </section>
       )}
 
-      {user.role === 'vendor' && (
-        <section className="empty-card">
-          <h3>Your vendor account is ready</h3>
-          <p>
-            The marketplace opens in the next phase. We&apos;ll email <strong>{user.email}</strong> when you can list your
-            services, receive quote requests and be matched with customers.
-          </p>
+
+      {isCustomer && requests?.length > 0 && (
+        <section aria-labelledby="dash-requests" className="dash-section">
+          <h2 id="dash-requests" className="dash-h2">Your requests to vendors</h2>
+          <ul className="a-list">
+            {requests.map((r) => (
+              <li key={r.id} className="request-row">
+                <div className="a-main">
+                  <strong>{r.vendorName}</strong>
+                  <small>{r.kind === 'deal' ? r.summary.deal.title : 'Parts you picked'} · {PLAN_LABEL[r.plan]} · {formatDate(r.createdAt)}</small>
+                </div>
+                <div className="a-stat">
+                  <span>{r.monthlyPrice ? 'Monthly' : 'Price'}</span>
+                  <strong>{naira(r.monthlyPrice ?? r.upfrontPrice ?? 0)}</strong>
+                </div>
+                <span className={`badge badge-${r.status}`}>{r.status === 'new' ? 'Sent' : r.status === 'cancelled' ? 'Cancelled' : r.status[0].toUpperCase() + r.status.slice(1)}</span>
+                {(r.status === 'new' || r.status === 'contacted') && (
+                  <button type="button" className="btn btn-quiet btn-small" onClick={() => cancelRequest(r.id)}>Cancel</button>
+                )}
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 

@@ -22,6 +22,7 @@ export default function SiteHeader() {
 
         <nav className="nav-links" aria-label="Main">
           <Link to="/#how">How it works</Link>
+          <Link to="/shop">Shop</Link>
           <Link to="/#platform">Platform</Link>
           <Link to="/#providers">For providers</Link>
         </nav>

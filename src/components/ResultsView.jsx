@@ -209,12 +209,12 @@ export default function ResultsView({ result, mode = 'guest', onChoose }) {
                 <p className={`opt-vs opt-vs-${vs.tone}`}>
                   {key === 'buy' ? `After it's paid for: ${vs.text.toLowerCase()}` : vs.text}
                 </p>
-                {mode === 'guest' && onChoose ? (
+                {onChoose ? (
                   <button type="button" className="btn btn-ghost btn-small opt-cta" onClick={() => onChoose(key)}>
-                    Sign up to continue
+                    {mode === 'guest' ? 'Sign up to continue' : 'See vendor offers'}
                   </button>
                 ) : (
-                  <p className="opt-soon">Provider matching opens soon</p>
+                  <p className="opt-soon">Save this assessment to see vendor offers</p>
                 )}
               </article>
             );
@@ -239,7 +239,11 @@ export default function ResultsView({ result, mode = 'guest', onChoose }) {
             {!assumptions.tariffsVerified && ' These are approximate and may differ from your current DisCo rate.'}
           </li>
           <li>Solar: {assumptions.peakSunHours} peak sun hours a day for your area, {Math.round(assumptions.performanceRatio * 100)}% real-world efficiency. Prices are typical installed costs until you receive real vendor quotes.</li>
-          <li>Lease: {assumptions.lease.termMonths} months, {Math.round(assumptions.lease.depositPct * 100)}% deposit. Energy as a service: {assumptions.eaas.termMonths} months. Both are indicative, not offers.</li>
+          <li>Lease: {assumptions.lease.termMonths} months, {Math.round(assumptions.lease.depositPct * 100)}% deposit. Both are indicative, not offers.</li>
+          <li>
+            Energy as a service: {assumptions.eaas.termMonths} months, installation spread over the payments. The price covers the equipment at a
+            {' '}{Math.round(assumptions.eaas.annualReturn * 100)}% yearly return to the provider, running costs, a risk allowance and a {Math.round(assumptions.eaas.platformFeePct * 100)}% Sunledger fee. Real vendors set their own terms.
+          </li>
           <li>Last updated {assumptions.asOf}.</li>
         </ul>
       </details>

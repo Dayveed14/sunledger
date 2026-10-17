@@ -68,6 +68,8 @@ export default function Login() {
             </div>
           </label>
 
+          <p className="field-help"><Link to="/forgot-password">Forgot your password?</Link></p>
+
           {error && <p className="form-error" role="alert">{error}</p>}
 
           <button type="submit" className="btn btn-primary btn-block" disabled={submitting || !email || !password}>

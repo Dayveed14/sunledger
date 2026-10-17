@@ -1,7 +1,8 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
 
-export default function RequireAuth({ children }) {
+// `roles` (optional) limits a page to certain account types; others are sent back to their dashboard.
+export default function RequireAuth({ children, roles }) {
   const { user, ready } = useAuth();
   const location = useLocation();
 
@@ -9,5 +10,6 @@ export default function RequireAuth({ children }) {
   if (!user) {
     return <Navigate to="/login" replace state={{ next: location.pathname + location.search }} />;
   }
+  if (roles && !roles.includes(user.role)) return <Navigate to="/app" replace />;
   return children;
 }
