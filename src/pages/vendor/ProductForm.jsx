@@ -9,6 +9,8 @@ const RATING = {
   panel: { label: 'Power per panel (watts)', hint: 'For example 550', placeholder: '550', inputMode: 'numeric' },
   inverter: { label: 'Inverter size (kVA)', hint: 'For example 1.5 or 5', placeholder: '1.5', inputMode: 'decimal' },
   battery: { label: 'Usable storage per unit (kWh)', hint: 'For example 2.4 for a 12V 200Ah battery', placeholder: '2.4', inputMode: 'decimal' },
+  controller: { label: 'Rated charging current (A)', hint: 'For example 30, 60, or 100', placeholder: '60', inputMode: 'numeric', },
+  portablePower: { label: 'Usable storage per unit (kWh)', hint: 'For example 2.4 for a 12V 200Ah battery', placeholder: '2.4', inputMode: 'decimal' },
 };
 
 const blank = { category: 'panel', name: '', brand: '', rating: '', systemVoltage: '12', batteryType: 'lithium', price: '', warrantyYears: '', description: '', inStock: true, listed: true, imageId: null };
@@ -102,7 +104,7 @@ export default function ProductForm({ product, onClose, onSaved, admin = false }
         <div className="field-row">
           <label className="field">
             <span>Product name</span>
-            <input type="text" value={f.name} onChange={set('name')} aria-invalid={Boolean(errors.name)} placeholder={f.category === 'panel' ? 'Mono PERC 550W' : f.category === 'inverter' ? 'Hybrid inverter 1.5kVA' : 'Lithium battery 12V 200Ah'} />
+            <input type="text" value={f.name} onChange={set('name')} aria-invalid={Boolean(errors.name)} placeholder={f.category === 'panel' ? 'Mono PERC 550W' : f.category === 'controller' ? 'Charge controller 60A' : f.category === 'inverter' ? 'Hybrid inverter 1.5kVA' : 'Lithium battery 12V 200Ah'} />
             {err('name')}
           </label>
           <label className="field">
@@ -126,7 +128,7 @@ export default function ProductForm({ product, onClose, onSaved, admin = false }
                 <option value="24">24V</option>
                 <option value="48">48V</option>
               </select>
-              {errors.systemVoltage ? err('systemVoltage') : <small>{f.category === 'battery' ? 'The voltage of one battery. Use 48V for 51.2V lithium.' : 'The battery voltage this inverter runs on.'}</small>}
+              {errors.systemVoltage ? err('systemVoltage') : <small>{f.category === 'battery' ? 'The voltage of one battery. Use 48V for 51.2V lithium.' : f.category === 'inverter' ? 'The battery voltage this inverter runs on.' : 'The battery voltage supported by this charge controller.'}</small>}
             </label>
           )}
           {f.category === 'battery' && (
