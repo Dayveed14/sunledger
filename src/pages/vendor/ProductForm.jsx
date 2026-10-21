@@ -28,7 +28,8 @@ const fromProduct = (p) => ({
   imageId: p.imageId ?? null,
 });
 
-export default function ProductForm({ product, onClose, onSaved }) {
+// Used by vendors (their own catalogue) and by the admin (`admin`: fixing any vendor's product).
+export default function ProductForm({ product, onClose, onSaved, admin = false }) {
   const editing = Boolean(product);
   const [f, setF] = useState(product ? fromProduct(product) : blank);
   const [errors, setErrors] = useState({});
@@ -63,7 +64,9 @@ export default function ProductForm({ product, onClose, onSaved }) {
     setErrors({});
     setFormError(null);
     try {
-      const res = editing ? await api.vendorUpdateProduct(product.id, body) : await api.vendorCreateProduct(body);
+      const res = admin
+        ? await api.adminUpdateProduct(product.id, body)
+        : editing ? await api.vendorUpdateProduct(product.id, body) : await api.vendorCreateProduct(body);
       onSaved(res.product);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'VALIDATION_ERROR') setErrors(fieldErrorsOf(err));
@@ -77,7 +80,7 @@ export default function ProductForm({ product, onClose, onSaved }) {
   return (
     <Dialog
       title={editing ? 'Edit product' : 'Add a product'}
-      eyebrow="Your catalogue"
+      eyebrow={admin ? `Admin edit · ${product.vendorName}` : 'Your catalogue'}
       onClose={onClose}
       footer={
         <>
@@ -141,7 +144,7 @@ export default function ProductForm({ product, onClose, onSaved }) {
 
         <div className="field-row">
           <label className="field">
-            <span>Your price per unit (₦)</span>
+            <span>{admin ? 'Price per unit (₦)' : 'Your price per unit (₦)'}</span>
             <input type="text" inputMode="numeric" value={f.price} onChange={(e) => setF((x) => ({ ...x, price: groupDigits(e.target.value) }))} aria-invalid={Boolean(errors.price)} placeholder="95,000" />
             {err('price')}
           </label>
@@ -158,7 +161,7 @@ export default function ProductForm({ product, onClose, onSaved }) {
           {err('description')}
         </label>
 
-        <ImageField label="Product picture" imageId={f.imageId} imageUrl={product?.imageUrl} onChange={(id) => setF((x) => ({ ...x, imageId: id }))} />
+        <ImageField label="Product picture" imageId={f.imageId} imageUrl={product?.imageUrl} upload={admin ? api.adminUploadImage : undefined} onChange={(id) => setF((x) => ({ ...x, imageId: id }))} />
 
         <div className="check-row">
           <label><input type="checkbox" checked={f.inStock} onChange={set('inStock')} /> In stock</label>

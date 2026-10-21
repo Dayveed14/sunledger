@@ -6,7 +6,7 @@ const NAV = {
   individual: [['/app', 'Overview', true], ['/app/orders', 'My orders'], ['/shop', 'Shop'], ['/app/profile', 'Profile & address']],
   business: [['/app', 'Overview', true], ['/app/orders', 'My orders'], ['/shop', 'Shop'], ['/app/profile', 'Profile & address']],
   vendor: [['/app', 'Overview', true], ['/app/products', 'Products'], ['/app/deals', 'Combos & deals'], ['/app/orders', 'Orders'], ['/app/requests', 'Requests'], ['/app/profile', 'Profile & location']],
-  admin: [['/app', 'Vendors', true], ['/app/orders', 'Orders'], ['/app/pricing', 'Pricing & rules'], ['/app/users', 'Users'], ['/app/activity', 'Activity']],
+  admin: [['/app', 'Vendors', true], ['/app/orders', 'Orders'], ['/app/admin-products', 'Products'], ['/app/pricing', 'Pricing & rules'], ['/app/users', 'Users'], ['/app/activity', 'Activity']],
 };
 const ROLE_LABEL = { individual: 'Individual', business: 'Business', vendor: 'Vendor', admin: 'Admin' };
 const OPEN_LABEL = { individual: 'Open an individual account', business: 'Open a business account', vendor: 'Sell on Sunledger (vendor)' };

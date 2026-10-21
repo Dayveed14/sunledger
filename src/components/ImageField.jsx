@@ -12,7 +12,7 @@ async function shrink(file, maxSide = 1200) {
   return new Promise((resolve, reject) => canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Could not read that picture.'))), 'image/jpeg', 0.85));
 }
 
-export default function ImageField({ label = 'Picture', imageId, imageUrl, onChange }) {
+export default function ImageField({ label = 'Picture', imageId, imageUrl, onChange, upload }) {
   const input = useRef(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -27,7 +27,7 @@ export default function ImageField({ label = 'Picture', imageId, imageUrl, onCha
     setError(null);
     try {
       const blob = await shrink(file);
-      const res = await api.uploadImage(blob);
+      const res = await (upload ?? api.uploadImage)(blob);
       setPreview(res.url);
       onChange(res.id);
     } catch (err) {

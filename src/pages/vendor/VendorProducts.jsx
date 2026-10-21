@@ -56,7 +56,7 @@ export default function VendorProducts() {
               {rows.map((p) => (
                 <li key={p.id} className="row-item">
                   <div className="row-main">
-                    <strong>{p.name}</strong>
+                    <button type="button" className="link-btn row-title" onClick={() => setEditing(p)}><strong>{p.name}</strong></button>
                     <small>{[p.brand, sizeText(p), p.warrantyYears ? `${p.warrantyYears}-yr warranty` : null].filter(Boolean).join(' · ')}</small>
                   </div>
                   <div className="row-price">{naira(p.price)}<small>per unit</small></div>
@@ -65,7 +65,7 @@ export default function VendorProducts() {
                     {p.status === 'hidden' && <span className="badge">Hidden</span>}
                   </div>
                   <div className="row-actions">
-                    <button type="button" className="btn btn-ghost btn-small" onClick={() => setEditing(p)}>Edit</button>
+                    <button type="button" className="btn btn-primary btn-small" onClick={() => setEditing(p)}>Edit price &amp; details</button>
                     {confirmId === p.id ? (
                       <>
                         <button type="button" className="btn btn-danger btn-small" onClick={() => remove(p.id)}>Confirm remove</button>

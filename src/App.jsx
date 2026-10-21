@@ -10,6 +10,7 @@ import SiteHeader from './components/SiteHeader.jsx';
 import AdminActivity from './pages/admin/AdminActivity.jsx';
 import AdminPricing from './pages/admin/AdminPricing.jsx';
 import AdminShell from './pages/admin/AdminShell.jsx';
+import AdminProducts from './pages/admin/AdminProducts.jsx';
 import AdminUsers from './pages/admin/AdminUsers.jsx';
 import ForgotPassword from './pages/ForgotPassword.jsx';
 import ResetPassword from './pages/ResetPassword.jsx';
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="/app/deals" element={<Only roles={['vendor']}><VendorShell><VendorDeals /></VendorShell></Only>} />
             <Route path="/app/requests" element={<Only roles={['vendor']}><VendorShell><VendorRequests /></VendorShell></Only>} />
             <Route path="/app/pricing" element={<Only roles={['admin']}><AdminShell><AdminPricing /></AdminShell></Only>} />
+            <Route path="/app/admin-products" element={<Only roles={['admin']}><AdminShell><AdminProducts /></AdminShell></Only>} />
             <Route path="/app/users" element={<Only roles={['admin']}><AdminShell><AdminUsers /></AdminShell></Only>} />
             <Route path="/app/activity" element={<Only roles={['admin']}><AdminShell><AdminActivity /></AdminShell></Only>} />
           </Route>

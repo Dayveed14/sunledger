@@ -18,6 +18,7 @@ export default function AdminPricing() {
   const [formError, setFormError] = useState(null);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState(null);
 
   const adopt = (list) => {
     setSettings(list);
@@ -33,6 +34,7 @@ export default function AdminPricing() {
     return [...out];
   }, [settings]);
 
+  const current = tab && groups.some(([g]) => g === tab) ? tab : groups[0]?.[0];
   const changed = (settings ?? []).filter((s) => fromField(s, fields[s.key] ?? '') !== s.value);
 
   const send = async (changes) => {
@@ -80,7 +82,19 @@ export default function AdminPricing() {
         </div>
       </div>
 
-      {groups.map(([group, rows]) => (
+      <div className="tabs" role="tablist" aria-label="Pricing sections">
+        {groups.map(([group, rows]) => {
+          const n = rows.filter((s) => fromField(s, fields[s.key] ?? '') !== s.value).length;
+          return (
+            <button key={group} type="button" role="tab" aria-selected={group === current} className={`tab${group === current ? ' on' : ''}`} onClick={() => setTab(group)}>
+              {group}
+              {n > 0 && <span className="tab-dot" title="Unsaved changes">{n}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {groups.filter(([group]) => group === current).map(([group, rows]) => (
         <fieldset key={group} className="settings-group">
           <legend className="field-legend">{group}</legend>
           {rows.map((s) => (

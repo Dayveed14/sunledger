@@ -64,6 +64,10 @@ export const api = {
   adminSettings: () => request('/admin/settings'),
   adminSaveSettings: (changes) => put('/admin/settings', { changes }),
   adminAudit: () => request('/admin/audit'),
+  adminProducts: (params) => request(`/admin/products${qs(params)}`),
+  adminUpdateProduct: (id, body) => put(`/admin/products/${id}`, body),
+  adminDeleteProduct: (id) => del(`/admin/products/${id}`),
+  adminUploadImage: (blob) => request('/admin/images', { method: 'POST', raw: blob }),
 
   // energy analysis
   catalog: (segment) => request(`/analysis/catalog/${segment}`),
