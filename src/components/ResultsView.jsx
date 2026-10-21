@@ -193,7 +193,7 @@ export default function ResultsView({ result, mode = 'guest', onChoose }) {
           {naira(current.monthlyCost)} a month).
         </p>
         <div className="opt-grid">
-          {OPTIONS.map(({ key, title, blurb }) => {
+          {OPTIONS.filter(({ key }) => options[key]).map(({ key, title, blurb }) => {
             const o = options[key];
             const vs = versusToday(o);
             const suggested = options.suggested === key;
@@ -240,10 +240,12 @@ export default function ResultsView({ result, mode = 'guest', onChoose }) {
           </li>
           <li>Solar: {assumptions.peakSunHours} peak sun hours a day for your area, {Math.round(assumptions.performanceRatio * 100)}% real-world efficiency. Prices are typical installed costs until you receive real vendor quotes.</li>
           <li>Lease: {assumptions.lease.termMonths} months, {Math.round(assumptions.lease.depositPct * 100)}% deposit. Both are indicative, not offers.</li>
+          {options.eaas && (
           <li>
             Energy as a service: {assumptions.eaas.termMonths} months, installation spread over the payments. The price covers the equipment at a
             {' '}{Math.round(assumptions.eaas.annualReturn * 100)}% yearly return to the provider, running costs, a risk allowance and a {Math.round(assumptions.eaas.platformFeePct * 100)}% Sunledger fee. Real vendors set their own terms.
           </li>
+          )}
           <li>Last updated {assumptions.asOf}.</li>
         </ul>
       </details>

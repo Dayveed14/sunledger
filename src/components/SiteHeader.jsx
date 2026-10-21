@@ -1,10 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext.jsx';
+import { useShop } from '../auth/ShopContext.jsx';
 import { useAssessment } from './AssessmentContext.jsx';
 
 export default function SiteHeader() {
   const { user, ready, logout } = useAuth();
   const { open } = useAssessment();
+  const { count } = useShop();
   const navigate = useNavigate();
 
   const onLogout = async () => {
@@ -16,8 +18,7 @@ export default function SiteHeader() {
     <header className="nav scrolled">
       <div className="wrap nav-inner">
         <Link to="/" className="brand" aria-label="Sunledger home">
-          <img src="/favicon.svg" width="30" height="30" alt="" className="brand-mark" />
-          <span className="brand-word">Sunledger</span>
+          <img src="/logo-full.png" height="30" alt="Sunledger" className="brand-logo" />
         </Link>
 
         <nav className="nav-links" aria-label="Main">
@@ -28,6 +29,7 @@ export default function SiteHeader() {
         </nav>
 
         <div className="nav-actions">
+          <Link to="/cart" className="cart-link" aria-label={`Cart, ${count} item${count === 1 ? '' : 's'}`}>Cart{count > 0 && <span className="cart-count">{count}</span>}</Link>
           {ready && user ? (
             <>
               <Link to="/app" className="btn btn-small btn-ghost">Dashboard</Link>

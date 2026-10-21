@@ -1,7 +1,10 @@
 import { useEffect } from 'react';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import AssessmentModal from './components/AssessmentModal.jsx';
-import RequireAuth from './components/RequireAuth.jsx';
+import AppLayout from './components/AppLayout.jsx';
+import AddAccount from './pages/AddAccount.jsx';
+import Profile from './pages/Profile.jsx';
+import RequireAuth, { Only } from './components/RequireAuth.jsx';
 import SiteFooter from './components/SiteFooter.jsx';
 import SiteHeader from './components/SiteHeader.jsx';
 import AdminActivity from './pages/admin/AdminActivity.jsx';
@@ -18,6 +21,12 @@ import Offers from './pages/Offers.jsx';
 import Results from './pages/Results.jsx';
 import SavedAssessment from './pages/SavedAssessment.jsx';
 import Shop from './pages/Shop.jsx';
+import Cart from './pages/Cart.jsx';
+import CheckoutReturn from './pages/CheckoutReturn.jsx';
+import Dispatch from './pages/Dispatch.jsx';
+import ItemPage from './pages/ItemPage.jsx';
+import OrderDetail from './pages/OrderDetail.jsx';
+import OrdersHome from './pages/OrdersHome.jsx';
 import Signup from './pages/Signup.jsx';
 import Verify from './pages/Verify.jsx';
 import VendorDeals from './pages/vendor/VendorDeals.jsx';
@@ -56,46 +65,30 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route
-            path="/app"
-            element={
-              <RequireAuth>
-                <AppHome />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/app/assessments/:id"
-            element={
-              <RequireAuth roles={['individual', 'business']}>
-                <SavedAssessment />
-              </RequireAuth>
-            }
-          />
-          <Route
-            path="/app/assessments/:id/offers"
-            element={
-              <RequireAuth roles={['individual', 'business']}>
-                <Offers />
-              </RequireAuth>
-            }
-          />
           <Route path="/shop" element={<Shop />} />
-          <Route
-            path="/app/products"
-            element={<RequireAuth roles={['vendor']}><VendorShell><VendorProducts /></VendorShell></RequireAuth>}
-          />
-          <Route
-            path="/app/deals"
-            element={<RequireAuth roles={['vendor']}><VendorShell><VendorDeals /></VendorShell></RequireAuth>}
-          />
-          <Route
-            path="/app/requests"
-            element={<RequireAuth roles={['vendor']}><VendorShell><VendorRequests /></VendorShell></RequireAuth>}
-          />
-          <Route path="/app/pricing" element={<RequireAuth roles={['admin']}><AdminShell><AdminPricing /></AdminShell></RequireAuth>} />
-          <Route path="/app/users" element={<RequireAuth roles={['admin']}><AdminShell><AdminUsers /></AdminShell></RequireAuth>} />
-          <Route path="/app/activity" element={<RequireAuth roles={['admin']}><AdminShell><AdminActivity /></AdminShell></RequireAuth>} />
+          <Route path="/shop/product/:id" element={<ItemPage kind="product" />} />
+          <Route path="/shop/deal/:id" element={<ItemPage kind="deal" />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout/return" element={<RequireAuth><CheckoutReturn /></RequireAuth>} />
+          <Route path="/checkout/mock" element={<RequireAuth><CheckoutReturn mock /></RequireAuth>} />
+          <Route path="/dispatch" element={<Dispatch />} />
+          <Route path="/vendor/fee/return" element={<RequireAuth><CheckoutReturn kind="fee" /></RequireAuth>} />
+          <Route path="/vendor/fee/mock" element={<RequireAuth><CheckoutReturn kind="fee" mock /></RequireAuth>} />
+          <Route element={<RequireAuth><AppLayout /></RequireAuth>}>
+            <Route path="/app" element={<AppHome />} />
+            <Route path="/app/profile" element={<Profile />} />
+            <Route path="/app/orders" element={<OrdersHome />} />
+            <Route path="/app/orders/:ref" element={<Only roles={['individual', 'business']}><OrderDetail /></Only>} />
+            <Route path="/app/add-account" element={<AddAccount />} />
+            <Route path="/app/assessments/:id" element={<Only roles={['individual', 'business']}><SavedAssessment /></Only>} />
+            <Route path="/app/assessments/:id/offers" element={<Only roles={['individual', 'business']}><Offers /></Only>} />
+            <Route path="/app/products" element={<Only roles={['vendor']}><VendorShell><VendorProducts /></VendorShell></Only>} />
+            <Route path="/app/deals" element={<Only roles={['vendor']}><VendorShell><VendorDeals /></VendorShell></Only>} />
+            <Route path="/app/requests" element={<Only roles={['vendor']}><VendorShell><VendorRequests /></VendorShell></Only>} />
+            <Route path="/app/pricing" element={<Only roles={['admin']}><AdminShell><AdminPricing /></AdminShell></Only>} />
+            <Route path="/app/users" element={<Only roles={['admin']}><AdminShell><AdminUsers /></AdminShell></Only>} />
+            <Route path="/app/activity" element={<Only roles={['admin']}><AdminShell><AdminActivity /></AdminShell></Only>} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

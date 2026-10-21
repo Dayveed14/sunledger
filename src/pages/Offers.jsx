@@ -4,6 +4,7 @@ import { ApiError, api } from '../api.js';
 import { useAuth } from '../auth/AuthContext.jsx';
 import DiyBuilder from '../components/DiyBuilder.jsx';
 import RequestBox from '../components/RequestBox.jsx';
+import { EAAS_ROLES } from '../config/launch.js';
 import { PLAN_LABEL, kwh, monthsToText, naira, nairaCompact, sizeText } from '../lib/format.js';
 
 const PLANS = ['buy', 'lease', 'rent', 'eaas'];
@@ -62,7 +63,26 @@ function EaasDetails({ offer }) {
   );
 }
 
+// Pay-small-small: the customer picks 3, 4, 6 or 12 months and the numbers change to match.
+function LeaseChips({ options, months, onPick }) {
+  return (
+    <div className="lease-chips" role="group" aria-label="Choose how many months to pay over">
+      {options.map((o) => (
+        <button key={o.months} type="button" className={`chip${o.months === months ? ' on' : ''}`} aria-pressed={o.months === months} onClick={() => onPick(o.months)}>
+          {o.months} months
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function DealCard({ deal, assessmentId, user, onSent }) {
+  const lease = deal.offer.plan === 'lease' && deal.offer.leaseOptions?.length ? deal.offer.leaseOptions : null;
+  const [months, setMonths] = useState(deal.offer.termMonths);
+  const picked = lease?.find((o) => o.months === months) ?? null;
+  const shown = picked
+    ? { ...deal.offer, upfront: picked.deposit, monthly: picked.monthly, termMonths: picked.months, monthlySaving: deal.offer.monthlySaving + (deal.offer.monthly - picked.monthly) }
+    : deal.offer;
   return (
     <article className="deal-offer">
       <div className="deal-top">
@@ -81,12 +101,14 @@ function DealCard({ deal, assessmentId, user, onSent }) {
         {deal.warrantyYears ? <li>{deal.warrantyYears}-year warranty</li> : null}
       </ul>
       {deal.description && <p className="deal-sub">{deal.description}</p>}
-      <PriceBlock offer={deal.offer} />
+      {lease && <LeaseChips options={lease} months={months} onPick={setMonths} />}
+      <PriceBlock offer={shown} />
+      {picked && <p className="deal-sub">Cash price {naira(deal.offer.cashPrice)}. On this plan you pay {naira(picked.totalPayable)} in total.</p>}
       <RequestBox
         user={user}
         vendorName={deal.vendor.name}
         label="Request this deal"
-        onSend={(message) => api.sendRequest(assessmentId, { kind: 'deal', dealId: deal.id, plan: deal.offer.plan, message })}
+        onSend={(message) => api.sendRequest(assessmentId, { kind: 'deal', dealId: deal.id, plan: deal.offer.plan, ...(picked ? { months: picked.months } : {}), message })}
         onSent={onSent}
       />
     </article>
@@ -97,7 +119,8 @@ export default function Offers() {
   const { id } = useParams();
   const { user } = useAuth();
   const [params, setParams] = useSearchParams();
-  const plan = PLANS.includes(params.get('plan')) ? params.get('plan') : 'buy';
+  const shownPlans = PLANS.filter((p) => p !== 'eaas' || EAAS_ROLES.includes(user?.role)); // energy as a service: businesses only
+  const plan = shownPlans.includes(params.get('plan')) ? params.get('plan') : 'buy';
   const [state, setState] = useState({ loading: true, data: null, error: null });
   const [refresh, setRefresh] = useState(0);
 
@@ -144,7 +167,7 @@ export default function Offers() {
       </header>
 
       <div className="plan-tabs" role="tablist" aria-label="How to pay">
-        {PLANS.map((p) => (
+        {shownPlans.map((p) => (
           <button
             key={p}
             type="button"
@@ -181,7 +204,7 @@ export default function Offers() {
               <div className="empty-card">
                 <h3>No vendor has a {PLAN_LABEL[plan].toLowerCase()} deal that fits yet</h3>
                 <p>
-                  {PLANS.some((p) => p !== plan && data.dealCounts[p] > 0)
+                  {shownPlans.some((p) => p !== plan && data.dealCounts[p] > 0)
                     ? 'Other ways to pay do have matches. Try the other tabs above.'
                     : 'Vendors are still joining. Check back soon.'}
                   {plan === 'buy' ? ' You can also build your own below from vendor parts.' : ''}

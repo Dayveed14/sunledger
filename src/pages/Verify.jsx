@@ -9,6 +9,7 @@ export default function Verify() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
   const email = location.state?.email;
+  const role = location.state?.role;
   const next = location.state?.next;
 
   const [code, setCode] = useState('');
@@ -35,7 +36,7 @@ export default function Verify() {
     setSubmitting(true);
     setError(null);
     try {
-      const { user } = await api.verifyOtp({ email, code: value });
+      const { user } = await api.verifyOtp({ email, code: value, ...(role ? { role } : {}) });
       setUser(user);
       await finishAuth(user, navigate, next);
     } catch (err) {
@@ -61,7 +62,7 @@ export default function Verify() {
     setError(null);
     setNotice(null);
     try {
-      const res = await api.resendOtp({ email });
+      const res = await api.resendOtp({ email, ...(role ? { role } : {}) });
       setCooldown(res.resendInSeconds ?? 60);
       setNotice('A new code is on its way.');
     } catch (err) {

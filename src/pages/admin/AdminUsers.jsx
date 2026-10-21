@@ -42,10 +42,7 @@ export default function AdminUsers() {
       </form>
       <div className="tabs" role="tablist" aria-label="Filter by account type">
         {ROLES.map(([value, label]) => (
-          <button style={{
-          backgroundColor: '#ffc857',
-          color: '#374151',
-        }} key={label} type="button" role="tab" aria-selected={role === value} className={role === value ? 'is-active' : ''} onClick={() => setRole(value)}>{label}</button>
+          <button key={label} type="button" role="tab" aria-selected={role === value} className={role === value ? 'is-active' : ''} onClick={() => setRole(value)}>{label}</button>
         ))}
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}

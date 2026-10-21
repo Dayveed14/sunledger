@@ -41,10 +41,7 @@ export default function AdminVendors() {
       </div>
       <div className="tabs" role="tablist" aria-label="Filter vendors">
         {FILTERS.map(([value, label]) => (
-          <button key={label} type="button" role="tab" aria-selected={filter === value} className={filter === value ? 'is-active' : ''} onClick={() => setFilter(value)}  style={{
-          backgroundColor: '#ffc857',
-          color: '#374151',
-        }} >{label}</button>
+          <button key={label} type="button" role="tab" aria-selected={filter === value} className={filter === value ? 'is-active' : ''} onClick={() => setFilter(value)}>{label}</button>
         ))}
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}

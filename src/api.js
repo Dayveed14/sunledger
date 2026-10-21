@@ -10,14 +10,14 @@ export class ApiError extends Error {
   }
 }
 
-async function request(path, { method = 'GET', body } = {}) {
+async function request(path, { method = 'GET', body, raw, headers } = {}) {
   let res;
   try {
     res = await fetch(`${BASE}${path}`, {
       method,
       credentials: 'include',
-      headers: body ? { 'Content-Type': 'application/json' } : undefined,
-      body: body ? JSON.stringify(body) : undefined,
+      headers: raw ? { 'Content-Type': raw.type, ...headers } : body ? { 'Content-Type': 'application/json', ...headers } : headers,
+      body: raw ?? (body ? JSON.stringify(body) : undefined),
     });
   } catch {
     throw new ApiError(0, 'NETWORK', 'Could not reach Sunledger. Check your connection and try again.');
@@ -95,9 +95,36 @@ export const api = {
   myRequests: () => request('/offers/requests'),
   cancelRequest: (id) => post(`/offers/requests/${id}/cancel`),
 
-  // public shop
+  uploadImage: (blob) => request('/vendor/images', { method: 'POST', raw: blob }),
+  // vendor registration fee (only used once registration is switched to paid)
+  vendorFeeStart: () => post('/vendor/fee/start'),
+  vendorFeeVerify: (reference) => post('/vendor/fee/verify', { reference }),
+  vendorFeeMockPay: (reference) => post('/vendor/fee/mock-pay', { reference }),
+  vendorLeasePreview: (body) => post('/vendor/lease-preview', body),
+
+  // public shop (always for one state)
   shopProducts: (params = {}) => request(`/shop/products${qs(params)}`),
-  shopDeals: () => request('/shop/deals'),
+  shopDeals: (params = {}) => request(`/shop/deals${qs(params)}`),
+  shopProduct: (id, dest) => request(`/shop/products/${id}${qs(dest ?? {})}`),
+  shopDeal: (id, dest) => request(`/shop/deals/${id}${qs(dest ?? {})}`),
+
+  // checkout and orders
+  quote: (items, destination) => post('/checkout/quote', { items, destination }),
+  checkout: (items, destination, key) => request('/checkout', { method: 'POST', body: { items, destination }, headers: { 'Idempotency-Key': key } }),
+  payAgain: (ref) => post(`/checkout/${ref}/pay`),
+  verifyPayment: (reference) => post('/checkout/verify', { reference }),
+  mockPay: (reference) => post('/checkout/mock-pay', { reference }),
+  myOrders: () => request('/orders'),
+  myOrder: (ref) => request(`/orders/${ref}`),
+  confirmReceived: (ref, voId) => post(`/orders/${ref}/received/${voId}`),
+  vendorOrders: (status) => request(`/vendor/orders${qs({ status })}`),
+  vendorOrderAction: (id, action, note) => post(`/vendor/orders/${id}/${action}`, note ? { note } : {}),
+  adminOrders: (params) => request(`/admin/orders${qs(params)}`),
+  adminOrderStats: () => request('/admin/orders/stats'),
+  adminOrderAction: (id, action) => post(`/admin/orders/${id}/${action}`, {}),
+  adminOrderEvents: (ref) => request(`/admin/orders/ref/${ref}/events`),
+  dispatchInfo: (t) => request(`/dispatch/info${qs({ t })}`),
+  dispatchConfirm: (t) => post('/dispatch/confirm', { t }),
 
   // auth
   register: (body) => post('/auth/register', body),
@@ -106,4 +133,8 @@ export const api = {
   login: (body) => post('/auth/login', body),
   logout: () => post('/auth/logout'),
   me: () => request('/auth/me'),
+  areas: () => request('/auth/areas'),
+  switchAccount: (role) => post('/auth/switch', { role }),
+  addAccount: (body) => post('/auth/accounts', body),
+  updateProfile: (body) => put('/auth/profile', body),
 };

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ApiError, api } from '../../api.js';
 import Dialog from '../../components/Dialog.jsx';
+import ImageField from '../../components/ImageField.jsx';
 import { CATEGORY_LABEL, naira, sizeText } from '../../lib/format.js';
 import { fieldErrorsOf, groupDigits, parseNumber } from '../../lib/forms.js';
 
@@ -22,10 +23,10 @@ function initial(deal) {
     warrantyYears: deal?.warrantyYears == null ? '' : String(deal.warrantyYears),
     buyOn: deal ? deal.buyPrice != null : true,
     buyPrice: money(deal?.buyPrice),
-    leaseOn: deal ? deal.leaseMonthly != null : false,
-    leaseDeposit: money(deal?.leaseDeposit ?? 0),
-    leaseMonthly: money(deal?.leaseMonthly),
-    leaseMonths: String(deal?.leaseMonths ?? '36'),
+    leaseOn: Boolean(deal?.leaseTerms),
+    leaseDepositPct: String(deal?.leaseTerms ? Math.round(deal.leaseTerms.depositPct * 100) : 30),
+    leaseTenors: deal?.leaseTerms?.tenors ?? [3, 6, 12],
+    imageId: deal?.imageId ?? null,
     rentOn: deal ? deal.rentMonthly != null : false,
     rentMonthly: money(deal?.rentMonthly),
     eaasOn: Boolean(deal?.eaasTerms),
@@ -108,6 +109,20 @@ export default function DealForm({ deal, onClose, onSaved }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewKey]);
 
+  const [leasePreview, setLeasePreview] = useState(null);
+  const leaseKey = JSON.stringify([f.leaseOn, f.buyOn, f.buyPrice, f.leaseDepositPct, f.leaseTenors]);
+  useEffect(() => {
+    const buyPrice = parseNumber(f.buyPrice);
+    const pct = Number.parseFloat(f.leaseDepositPct);
+    if (!f.leaseOn || !f.buyOn || !buyPrice || !(pct > 0) || f.leaseTenors.length === 0) { setLeasePreview(null); return undefined; }
+    let cancelled = false;
+    const t = setTimeout(() => {
+      api.vendorLeasePreview({ buyPrice, lease: { depositPct: pct, tenors: f.leaseTenors } }).then((r) => !cancelled && setLeasePreview(r.options)).catch(() => !cancelled && setLeasePreview(null));
+    }, 300);
+    return () => { cancelled = true; clearTimeout(t); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leaseKey]);
+
   const submit = async (e) => {
     e.preventDefault();
     const num = (k) => parseNumber(f[k]);
@@ -122,7 +137,8 @@ export default function DealForm({ deal, onClose, onSaved }) {
       installationIncluded: f.installationIncluded,
       warrantyYears: num('warrantyYears') ?? null,
       buyPrice: f.buyOn ? num('buyPrice') ?? null : null,
-      lease: f.leaseOn ? { deposit: num('leaseDeposit') ?? 0, monthly: num('leaseMonthly'), months: num('leaseMonths') } : null,
+      lease: f.leaseOn ? { depositPct: Number.parseFloat(f.leaseDepositPct) || 0, tenors: f.leaseTenors } : null,
+      imageId: f.imageId,
       rentMonthly: f.rentOn ? num('rentMonthly') ?? null : null,
       eaas: f.eaasOn ? eaasBody() : null,
       status: f.publish ? 'active' : editing && deal.status === 'paused' ? 'paused' : 'draft',
@@ -221,10 +237,27 @@ export default function DealForm({ deal, onClose, onSaved }) {
             <div className="plan-box">
               <label className="plan-toggle"><input type="checkbox" checked={f.leaseOn} onChange={set('leaseOn')} /> Lease to own</label>
               {f.leaseOn && (
-                <div className="field-row">
-                  <label className="field"><span>Deposit (₦)</span><input type="text" inputMode="numeric" value={f.leaseDeposit} onChange={setMoney('leaseDeposit')} /></label>
-                  <label className="field"><span>Monthly (₦)</span><input type="text" inputMode="numeric" value={f.leaseMonthly} onChange={setMoney('leaseMonthly')} aria-invalid={Boolean(errors['lease.monthly'])} />{err('lease.monthly')}</label>
-                  <label className="field"><span>Months</span><input type="text" inputMode="numeric" value={f.leaseMonths} onChange={set('leaseMonths')} />{err('lease.months')}</label>
+                <div className="lease-form">
+                  <p className="muted">&quot;Pay small small&quot;: the customer pays a deposit, then spreads the rest over the months you allow and owns the system at the end. The price comes from your buy price.</p>
+                  <label className="field"><span>Deposit (% of the buy price)</span>
+                    <input type="text" inputMode="decimal" value={f.leaseDepositPct} onChange={set('leaseDepositPct')} aria-invalid={Boolean(errors['lease.depositPct'])} />
+                    {errors['lease.depositPct'] ? err('lease.depositPct') : <small>Between 10 and 60.</small>}</label>
+                  <fieldset className="tenor-pick">
+                    <legend>Payment plans you offer</legend>
+                    {[3, 4, 6, 12].map((m) => (
+                      <label key={m} className="check-chip">
+                        <input type="checkbox" checked={f.leaseTenors.includes(m)} onChange={() => setF((x) => ({ ...x, leaseTenors: x.leaseTenors.includes(m) ? x.leaseTenors.filter((t) => t !== m) : [...x.leaseTenors, m].sort((a, b) => a - b) }))} /> {m} months
+                      </label>
+                    ))}
+                    {err('lease.tenors')}
+                  </fieldset>
+                  {!f.buyOn && <p className="form-error">Turn on &quot;Buy outright&quot; and set a price: lease is priced from it.</p>}
+                  {leasePreview && (
+                    <table className="lease-preview">
+                      <thead><tr><th>Plan</th><th>Deposit</th><th>Monthly</th><th>Customer pays in total</th></tr></thead>
+                      <tbody>{leasePreview.map((o) => <tr key={o.months}><td>{o.months} months</td><td>{naira(o.deposit)}</td><td>{naira(o.monthly)}</td><td>{naira(o.totalPayable)}</td></tr>)}</tbody>
+                    </table>
+                  )}
                 </div>
               )}
             </div>
@@ -306,6 +339,8 @@ export default function DealForm({ deal, onClose, onSaved }) {
             <textarea rows={3} value={f.description} onChange={set('description')} maxLength={600} placeholder="What it can power, what's covered, delivery areas…" />
             {err('description')}
           </label>
+
+          <ImageField label="Deal picture" imageId={f.imageId} imageUrl={deal?.imageUrl} onChange={(id) => setF((x) => ({ ...x, imageId: id }))} />
 
           <div className="check-row">
             <label><input type="checkbox" checked={f.publish} onChange={set('publish')} /> Publish now (customers can see this deal)</label>

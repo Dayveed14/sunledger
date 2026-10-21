@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
 import { api } from '../../api.js';
 import { useAuth } from '../../auth/AuthContext.jsx';
+import { VENDOR_REGISTRATION_FEE_REQUIRED } from '../../config/launch.js';
+import VendorFeeGate from './VendorFeeGate.jsx';
 
 const VERIFY_LABEL = { pending: 'Pending verification', verified: 'Verified vendor', rejected: 'Not approved' };
 
@@ -28,16 +29,7 @@ export default function VendorShell({ children }) {
         {summary && <span className={`badge badge-${summary.verification}`}>{VERIFY_LABEL[summary.verification]}</span>}
       </header>
 
-      <nav className="subnav" aria-label="Vendor sections">
-        <NavLink to="/app" end>Overview</NavLink>
-        <NavLink to="/app/products">Products</NavLink>
-        <NavLink to="/app/deals">Combos &amp; deals</NavLink>
-        <NavLink to="/app/requests">
-          Requests{summary?.newRequests > 0 && <span className="tab-dot">{summary.newRequests}</span>}
-        </NavLink>
-      </nav>
-
-      {children}
+      {VENDOR_REGISTRATION_FEE_REQUIRED && summary?.registrationFee?.mustPay ? <VendorFeeGate fee={summary.registrationFee} /> : children}
     </div>
   );
 }

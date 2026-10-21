@@ -1,17 +1,19 @@
 :root {
-  --ink: #10141f;
-  --panel: #161b2c;
-  --panel-2: #1b2136;
-  --line: #262c42;
-  --paper: #edeff5;
-  --muted: #8c93a6;
-  --solar: #f2a93c;
-  --solar-light: #ffd37a;
-  --solar-deep: #d9761b;
-  --teal: #33d6c0;
+  /* Sunledger brand: Deep Navy, Sun Gold, Energy Green, Sky Teal, Slate Gray, Cloud White */
+  --ink: #0b1220;
+  --panel: #111a2c;
+  --panel-2: #16213a;
+  --line: #22304a;
+  --paper: #f8fafc;
+  --muted: #94a3b8;
+  --solar: #ffc857;
+  --solar-light: #ffd98a;
+  --solar-deep: #e6a82e;
+  --teal: #10b981;
+  --sky: #06b6d4;
 
-  --font-display: "Fraunces", serif;
-  --font-body: "Space Grotesk", sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Inter", system-ui, sans-serif;
 
   --container: 1180px;
 }
@@ -161,6 +163,10 @@ p {
 .brand-mark {
   display: block;
   border-radius: 8px;
+}
+.brand-logo {
+  display: block;
+  width: auto;
 }
 .brand-word {
   font-family: var(--font-display);
@@ -527,7 +533,7 @@ p {
 .final-cta {
   padding: 110px 0 130px;
   text-align: center;
-  background: radial-gradient(ellipse at 50% 0%, rgba(242, 169, 60, 0.12), transparent 60%);
+  background: radial-gradient(ellipse at 50% 0%, rgba(255, 200, 87, 0.12), transparent 60%);
 }
 .final-cta h2 {
   font-size: clamp(32px, 4.4vw, 48px);

@@ -13,3 +13,9 @@ export default function RequireAuth({ children, roles }) {
   if (roles && !roles.includes(user.role)) return <Navigate to="/app" replace />;
   return children;
 }
+
+// Inside the signed-in layout: shows the page only to the listed account types, otherwise sends people to their overview.
+export function Only({ roles, children }) {
+  const { user } = useAuth();
+  return roles.includes(user.role) ? children : <Navigate to="/app" replace />;
+}

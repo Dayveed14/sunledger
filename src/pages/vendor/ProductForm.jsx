@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ApiError, api } from '../../api.js';
 import Dialog from '../../components/Dialog.jsx';
+import ImageField from '../../components/ImageField.jsx';
 import { CATEGORY_LABEL } from '../../lib/format.js';
 import { fieldErrorsOf, groupDigits, parseNumber } from '../../lib/forms.js';
 
@@ -10,7 +11,7 @@ const RATING = {
   battery: { label: 'Usable storage per unit (kWh)', hint: 'For example 2.4 for a 12V 200Ah battery', placeholder: '2.4', inputMode: 'decimal' },
 };
 
-const blank = { category: 'panel', name: '', brand: '', rating: '', systemVoltage: '12', batteryType: 'lithium', price: '', warrantyYears: '', description: '', inStock: true, listed: true };
+const blank = { category: 'panel', name: '', brand: '', rating: '', systemVoltage: '12', batteryType: 'lithium', price: '', warrantyYears: '', description: '', inStock: true, listed: true, imageId: null };
 
 const fromProduct = (p) => ({
   category: p.category,
@@ -24,6 +25,7 @@ const fromProduct = (p) => ({
   description: p.description ?? '',
   inStock: p.inStock,
   listed: p.status === 'active',
+  imageId: p.imageId ?? null,
 });
 
 export default function ProductForm({ product, onClose, onSaved }) {
@@ -51,6 +53,7 @@ export default function ProductForm({ product, onClose, onSaved }) {
       description: f.description.trim() || null,
       inStock: f.inStock,
       status: f.listed ? 'active' : 'hidden',
+      imageId: f.imageId,
     };
     if (Number.isNaN(body.rating) || Number.isNaN(body.price)) {
       setErrors({ ...(Number.isNaN(body.rating) ? { rating: 'Enter a number.' } : {}), ...(Number.isNaN(body.price) ? { price: 'Enter an amount in naira.' } : {}) });
@@ -154,6 +157,8 @@ export default function ProductForm({ product, onClose, onSaved }) {
           <textarea rows={3} value={f.description} onChange={set('description')} maxLength={500} />
           {err('description')}
         </label>
+
+        <ImageField label="Product picture" imageId={f.imageId} imageUrl={product?.imageUrl} onChange={(id) => setF((x) => ({ ...x, imageId: id }))} />
 
         <div className="check-row">
           <label><input type="checkbox" checked={f.inStock} onChange={set('inStock')} /> In stock</label>

@@ -30,7 +30,7 @@ export default function Login() {
       await finishAuth(loggedIn, navigate, next);
     } catch (err) {
       if (err instanceof ApiError && err.code === 'EMAIL_NOT_VERIFIED') {
-        navigate('/verify', { state: { email: err.details?.email ?? email.trim(), resendIn: 60, next } });
+        navigate('/verify', { state: { email: err.details?.email ?? email.trim(), role: err.details?.role, resendIn: 60, next } });
         return;
       }
       setError(err.message);

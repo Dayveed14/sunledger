@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ApiError, api } from '../api.js';
+import AddressFields, { emptyAddress } from '../components/AddressFields.jsx';
+import { useAuth } from '../auth/AuthContext.jsx';
+import { finishAuth } from '../lib/postAuth.js';
 import { loadPending } from '../lib/pending.js';
 
 const ROLES = [
@@ -11,6 +14,7 @@ const ROLES = [
 
 export default function Signup() {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
   const location = useLocation();
   const [params] = useSearchParams();
   const initialRole = ROLES.some((r) => r.key === params.get('role')) ? params.get('role') : 'individual';
@@ -19,7 +23,8 @@ export default function Signup() {
   const [form, setForm] = useState({ fullName: '', companyName: '', email: '', phone: '', password: '' });
   const [fieldErrors, setFieldErrors] = useState({});
   const [formError, setFormError] = useState(null);
-  const [emailTaken, setEmailTaken] = useState(false);
+  const [emailTaken, setEmailTaken] = useState(null);
+  const [address, setAddress] = useState(emptyAddress);
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -32,25 +37,33 @@ export default function Signup() {
     setSubmitting(true);
     setFieldErrors({});
     setFormError(null);
-    setEmailTaken(false);
+    setEmailTaken(null);
 
     const body = {
       role,
       fullName: form.fullName.trim(),
       email: form.email.trim(),
       password: form.password,
+      phone: form.phone.trim(),
+      address: { line: address.line.trim(), state: address.state, areaId: address.areaId },
       ...(needsCompany ? { companyName: form.companyName.trim() } : {}),
-      ...(form.phone.trim() ? { phone: form.phone.trim() } : {}),
     };
 
     try {
       const res = await api.register(body);
+      if (res.added) {
+        // They already had an account on this email, so no code is needed.
+        setUser(res.user);
+        await finishAuth(res.user, navigate, location.state?.next);
+        return;
+      }
       navigate('/verify', {
-        state: { email: res.email, resendIn: res.resendInSeconds, next: location.state?.next },
+        state: { email: res.email, role: res.role, resendIn: res.resendInSeconds, next: location.state?.next },
       });
     } catch (err) {
       if (err instanceof ApiError && err.code === 'VALIDATION_ERROR') setFieldErrors(err.details?.fields ?? {});
-      else if (err instanceof ApiError && err.code === 'EMAIL_TAKEN') setEmailTaken(true);
+      else if (err instanceof ApiError && err.code === 'EMAIL_TAKEN') setEmailTaken(err.message);
+      else if (err instanceof ApiError && err.code === 'EXISTING_ACCOUNT_PASSWORD') setFieldErrors({ password: err.message });
       else setFormError(err.message);
       setSubmitting(false);
     }
@@ -99,10 +112,18 @@ export default function Signup() {
           </label>
 
           <label className="field">
-            <span>Phone <em>(optional)</em></span>
-            <input type="tel" autoComplete="tel" inputMode="tel" value={form.phone} onChange={set('phone')} aria-invalid={Boolean(fieldErrors.phone)} />
+            <span>Phone number</span>
+            <input type="tel" autoComplete="tel" inputMode="tel" value={form.phone} onChange={set('phone')} placeholder="0803 123 4567" aria-invalid={Boolean(fieldErrors.phone)} required />
             {fieldErrors.phone && <small className="err">{fieldErrors.phone}</small>}
           </label>
+
+          <AddressFields
+            value={address}
+            onChange={setAddress}
+            errors={fieldErrors}
+            legend={role === 'vendor' ? 'Business location (where orders are picked up)' : 'Delivery address'}
+          />
+          <p className="muted small-note">Sunledger is live in Lagos and Abuja for now.</p>
 
           <label className="field">
             <span>Password</span>
@@ -119,12 +140,12 @@ export default function Signup() {
                 {showPassword ? 'Hide' : 'Show'}
               </button>
             </div>
-            {fieldErrors.password ? <small className="err">{fieldErrors.password}</small> : <small>At least 8 characters, with a letter and a number.</small>}
+            {fieldErrors.password ? <small className="err">{fieldErrors.password}</small> : <small>At least 8 characters, with a letter and a number. Already have a Sunledger account with this email? Use its password to add this account type.</small>}
           </label>
 
           {emailTaken && (
             <p className="form-error" role="alert">
-              An account with this email already exists. <Link to="/login" state={location.state}>Log in instead</Link>.
+              {emailTaken} <Link to="/login" state={location.state}>Log in instead</Link>.
             </p>
           )}
           {formError && <p className="form-error" role="alert">{formError}</p>}

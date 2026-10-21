@@ -6,8 +6,7 @@ export default function SiteFooter() {
       <div className="wrap footer-grid">
         <div className="footer-brand">
           <Link to="/" className="brand">
-            <img src="/favicon.svg" width="26" height="26" alt="" className="brand-mark" />
-            <span className="brand-word">Sunledger</span>
+            <img src="/logo-full.png" height="26" alt="Sunledger" className="brand-logo" />
           </Link>
           <p>Energy intelligence for Nigerian homes and businesses.</p>
         </div>
